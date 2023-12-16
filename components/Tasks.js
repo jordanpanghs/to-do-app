@@ -3,7 +3,7 @@ import {View, Text} from 'react-native';
 
 export default function Tasks() {
   return (
-    <View>
+    <View style={{justifyContent: 'center', alignContent: 'center', flex: 1}}>
       <Text>Tasks</Text>
     </View>
   );
