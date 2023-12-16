@@ -5,6 +5,7 @@ import {
   ScrollView,
   View,
   Text,
+  TextInput,
   Button,
   TouchableOpacity,
 } from 'react-native';
@@ -12,6 +13,18 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 
 export default function Tasks() {
   const [tasks, setTasks] = useState([{name: 'Task 1', completed: false}]);
+  const [isEditing, setIsEditing] = useState(false);
+
+  const handleAddTask = () => {
+    setTasks([
+      ...tasks,
+      {
+        name: `Task ${tasks.length + 1}`,
+        completed: false,
+      },
+    ]);
+    setIsEditing(true);
+  };
 
   const handleUpdateTask = index => {
     const updatedTasks = [...tasks];
@@ -38,8 +51,17 @@ export default function Tasks() {
                   : {backgroundColor: 'lightcoral'},
               ]}>
               <View style={styles.textContainer}>
-                <Text style={styles.taskText}>{task.name}</Text>
-                <Text style={styles.taskText}>
+                <TextInput
+                  style={styles.taskNameText}
+                  value={task.name}
+                  onChangeText={text => {
+                    const updatedTasks = [...tasks];
+                    updatedTasks[index].name = text;
+                    setTasks(updatedTasks);
+                  }}
+                />
+
+                <Text style={styles.taskStatusText}>
                   {task.completed ? 'Completed' : 'Not Completed'}
                 </Text>
               </View>
@@ -69,18 +91,7 @@ export default function Tasks() {
           </View>
         ))}
       </ScrollView>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() =>
-          setTasks([
-            ...tasks,
-            {
-              name: `Task ${tasks.length + 1}`,
-              description: 'New Task',
-              completed: false,
-            },
-          ])
-        }>
+      <TouchableOpacity style={styles.button} onPress={() => handleAddTask()}>
         <Ionicons name="add" size={30} color="black" />
       </TouchableOpacity>
     </>
@@ -101,7 +112,6 @@ const styles = StyleSheet.create({
     margin: 10,
     backgroundColor: '#fff',
     borderRadius: 10,
-    elevation: 10,
   },
   textContainer: {
     flex: 1,
@@ -109,7 +119,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  taskText: {
+  taskNameText: {
+    textAlign: 'center',
+    width: '80%',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  taskStatusText: {
     fontSize: 14,
     fontWeight: 'bold',
   },
