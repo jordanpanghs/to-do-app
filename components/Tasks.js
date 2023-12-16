@@ -1,38 +1,74 @@
 /* eslint-disable prettier/prettier */
 import React, {useState} from 'react';
-import {StyleSheet, View, Text, Button, TouchableOpacity} from 'react-native';
+import {
+  StyleSheet,
+  ScrollView,
+  View,
+  Text,
+  Button,
+  TouchableOpacity,
+} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 export default function Tasks() {
   const [tasks, setTasks] = useState([{name: 'Task 1', completed: false}]);
 
+  const handleUpdateTask = index => {
+    const updatedTasks = [...tasks];
+    updatedTasks[index].completed = !updatedTasks[index].completed;
+    setTasks(updatedTasks);
+  };
+
+  const handleDeleteTask = index => {
+    const updatedTasks = [...tasks];
+    updatedTasks.splice(index, 1);
+    setTasks(updatedTasks);
+  };
+
   return (
-    <View style={{justifyContent: 'center', alignContent: 'center', flex: 1}}>
-      {tasks.map((task, index) => (
-        <View key={index} style={styles.tasksContainer}>
-          <View style={styles.tasks}>
-            <View style={{}}>
-              <Text>{task.name}</Text>
-              <Text>{task.completed ? 'Completed' : 'Not Completed'}</Text>
-            </View>
-            <View>
-              <TouchableOpacity
-                onPress={() => {
-                  console.log('lmfao');
-                }}>
-                <Ionicons name="checkmark-outline" size={30} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  console.log('lmfao');
-                }}>
-                <Ionicons name="trash-outline" size={30} />
-              </TouchableOpacity>
+    <>
+      <ScrollView style={{flex: 1}}>
+        {tasks.map((task, index) => (
+          <View key={index} style={styles.tasksContainer}>
+            <View
+              style={[
+                styles.tasks,
+                task.completed
+                  ? {backgroundColor: 'lightgreen'}
+                  : {backgroundColor: 'lightcoral'},
+              ]}>
+              <View style={styles.textContainer}>
+                <Text style={styles.taskText}>{task.name}</Text>
+                <Text style={styles.taskText}>
+                  {task.completed ? 'Completed' : 'Not Completed'}
+                </Text>
+              </View>
+              <View style={styles.iconContainer}>
+                <TouchableOpacity
+                  onPress={() => {
+                    handleUpdateTask(index);
+                  }}>
+                  {task.completed ? (
+                    <Ionicons name="close-outline" size={30} color="red" />
+                  ) : (
+                    <Ionicons
+                      name="checkmark-outline"
+                      size={30}
+                      color="green"
+                    />
+                  )}
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => {
+                    handleDeleteTask(index);
+                  }}>
+                  <Ionicons name="trash-outline" size={30} />
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
-        </View>
-      ))}
-
+        ))}
+      </ScrollView>
       <TouchableOpacity
         style={styles.button}
         onPress={() =>
@@ -47,16 +83,14 @@ export default function Tasks() {
         }>
         <Ionicons name="add" size={30} color="black" />
       </TouchableOpacity>
-    </View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   tasksContainer: {
-    flex: 1,
+    width: 'auto',
     flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   tasks: {
     flex: 1,
@@ -68,6 +102,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 10,
     elevation: 10,
+  },
+  textContainer: {
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  taskText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  iconContainer: {
+    gap: 10,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   button: {
     position: 'absolute',
