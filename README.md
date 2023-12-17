@@ -30,6 +30,7 @@ pip install Flask
 ## Step 4: Start Database Server
 
 ```
+cd ./database
 python db.py
 ```
 
