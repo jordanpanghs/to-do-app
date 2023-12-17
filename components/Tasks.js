@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   StyleSheet,
   ScrollView,
@@ -12,30 +12,77 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 export default function Tasks() {
-  const [tasks, setTasks] = useState([{name: 'Task 1', completed: false}]);
-  const [isEditing, setIsEditing] = useState(false);
+  const [tasks, setTasks] = useState([]);
+
+  useEffect(() => {
+    fetch('http://10.0.2.2:5000/api/todos/get')
+      .then(response => response.json())
+      .then(data => setTasks(data))
+      .catch(error => console.error(error));
+  }, []);
 
   const handleAddTask = () => {
-    setTasks([
-      ...tasks,
-      {
-        name: `Task ${tasks.length + 1}`,
-        completed: false,
+    const newTask = {
+      task_name: `Task ${tasks.length + 1}`,
+      completed: false,
+    };
+
+    fetch('http://10.0.2.2:5000/api/todos/post', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
       },
-    ]);
-    setIsEditing(true);
+      body: JSON.stringify(newTask),
+    })
+      .then(response => response.json())
+      .then(data => {
+        setTasks([...tasks, data]);
+        console.log(data);
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
   };
 
-  const handleUpdateTask = index => {
+  const handleUpdateTask = (id, index) => {
     const updatedTasks = [...tasks];
-    updatedTasks[index].completed = !updatedTasks[index].completed;
-    setTasks(updatedTasks);
+
+    const updateTaskBody = {
+      task_name: updatedTasks[index].task_name,
+      completed: updatedTasks[index].completed,
+    };
+
+    fetch(`http://10.0.2.2:5000/api/todos/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updateTaskBody),
+    })
+      .then(response => {
+        if (response.ok) {
+          setTasks(updatedTasks);
+        } else {
+          throw new Error('Error: ' + response.status);
+        }
+      })
+      .catch(error => console.error('Error:', error));
   };
 
-  const handleDeleteTask = index => {
-    const updatedTasks = [...tasks];
-    updatedTasks.splice(index, 1);
-    setTasks(updatedTasks);
+  const handleDeleteTask = (id, index) => {
+    fetch(`http://10.0.2.2:5000/api/todos/${id}`, {
+      method: 'DELETE',
+    })
+      .then(response => {
+        if (response.ok) {
+          const updatedTasks = [...tasks];
+          updatedTasks.splice(index, 1);
+          setTasks(updatedTasks);
+        } else {
+          throw new Error('Error: ' + response.status);
+        }
+      })
+      .catch(error => console.error('Error:', error));
   };
 
   return (
@@ -53,12 +100,13 @@ export default function Tasks() {
               <View style={styles.textContainer}>
                 <TextInput
                   style={styles.taskNameText}
-                  value={task.name}
+                  value={task.task_name}
                   onChangeText={text => {
                     const updatedTasks = [...tasks];
-                    updatedTasks[index].name = text;
+                    updatedTasks[index].task_name = text;
                     setTasks(updatedTasks);
                   }}
+                  onBlur={() => handleUpdateTask(task.id, index)}
                 />
 
                 <Text style={styles.taskStatusText}>
@@ -68,7 +116,11 @@ export default function Tasks() {
               <View style={styles.iconContainer}>
                 <TouchableOpacity
                   onPress={() => {
-                    handleUpdateTask(index);
+                    const updatedTasks = [...tasks];
+                    updatedTasks[index].completed =
+                      !updatedTasks[index].completed;
+                    setTasks(updatedTasks);
+                    handleUpdateTask(task.id, index);
                   }}>
                   {task.completed ? (
                     <Ionicons name="close-outline" size={30} color="red" />
@@ -82,7 +134,7 @@ export default function Tasks() {
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => {
-                    handleDeleteTask(index);
+                    handleDeleteTask(task.id, index);
                   }}>
                   <Ionicons name="trash-outline" size={30} />
                 </TouchableOpacity>
